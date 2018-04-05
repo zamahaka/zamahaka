@@ -1,110 +1,63 @@
 package laba1
 
-import kotlinx.coroutines.experimental.Deferred
-import kotlinx.coroutines.experimental.async
 import kotlinx.coroutines.experimental.runBlocking
 import kotlin.system.measureTimeMillis
 
 var numbers = randoms.toIntArray()
 
 fun main(args: Array<String>) = runBlocking {
-    val time = measureTimeMillis { println(sort(numbers.copyOf())) }
-    println("rec time: $time")
-
-    println("suspend time: ${measureTimeMillis { println(sortSuspend(numbers.copyOf())) }}")
+    val array = numbers.copyOf()
+    println("Before sorting: ${array.toList().take(100)}")
+    val time = measureTimeMillis { sort(array) }
+    println("After sorting: ${array.toList().take(100)}")
+    println("Iterative sorting time: $time")
 }
 
 fun sort(array: IntArray) = quickSort(array, 0, array.size - 1)
 
-suspend fun sortSuspend(array: IntArray) = quickSortSuspend(array, 0, array.size - 1)
 
-private fun quickSort(array: IntArray, low: Int, high: Int) {
-    var i = low
-    var j = high
-    // Get the pivot element from the middle of the list
-    val pivot = array[low + (high - low) / 2]
+fun partition(arr: IntArray, left: Int, right: Int): Int {
+    var i = left
+    var j = right
 
-    // Divide into two lists
+    var tmp: Int
+
+    val pivot = arr[(left + right) / 2]
+
     while (i <= j) {
-        // If the current value from the left list is smaller than the pivot
-        // element then get the next element from the left list
-        while (array[i] < pivot) {
+
+        while (arr[i] < pivot) i++
+
+        while (arr[j] > pivot) j--
+
+        if (i <= j) {
+
+            tmp = arr[i]
+
+            arr[i] = arr[j]
+
+            arr[j] = tmp
+
             i++
-        }
-        // If the current value from the right list is larger than the pivot
-        // element then get the next element from the right list
-        while (array[j] > pivot) {
+
             j--
+
         }
 
-        // If we have found a value in the left list which is larger than
-        // the pivot element and if we have found a value in the right list
-        // which is smaller than the pivot element then we exchange the
-        // values.
-        // As we are done we can increase i and j
-        if (i <= j) {
-            exchange(i, j)
-            i++
-            j--
-        }
     }
-    // Recursion
-    if (low < j)
-        quickSort(array, low, j)
-    if (i < high)
-        quickSort(array, i, high)
+
+    return i
 }
 
-private suspend fun quickSortSuspend(array: IntArray, low: Int, high: Int) {
-    var i = low
-    var j = high
-    val length = high - low + 1
-    // Get the pivot element from the middle of the list
-    val pivot = array[low + (high - low) / 2]
 
-    // Divide into two lists
-    while (i <= j) {
-        // If the current value from the left list is smaller than the pivot
-        // element then get the next element from the left list
-        while (array[i] < pivot) {
-            i++
-        }
-        // If the current value from the right list is larger than the pivot
-        // element then get the next element from the right list
-        while (array[j] > pivot) {
-            j--
-        }
+fun quickSort(arr: IntArray, left: Int, right: Int) {
 
-        // If we have found a value in the left list which is larger than
-        // the pivot element and if we have found a value in the right list
-        // which is smaller than the pivot element then we exchange the
-        // values.
-        // As we are done we can increase i and j
-        if (i <= j) {
-            exchange(i, j)
-            i++
-            j--
-        }
-    }
-    // Recursion
-    if (length < 10) {
-        val def = mutableListOf<Deferred<Unit>>()
-        if (low < j)
-            def + async { quickSort(array, low, j) }
-        if (i < high)
-            def + async { quickSort(array, i, high) }
+    val index = partition(arr, left, right)
 
-        def.forEach { it.await() }
-    } else {
-        if (low < j)
-            quickSort(array, low, j)
-        if (i < high)
-            quickSort(array, i, high)
-    }
-}
+    if (left < index - 1)
+        quickSort(arr, left, index - 1)
 
-private fun exchange(i: Int, j: Int) {
-    val temp = numbers[i]
-    numbers[i] = numbers[j]
-    numbers[j] = temp
+    if (index < right)
+        quickSort(arr, index, right)
+
 }

@@ -12,7 +12,7 @@ fun min(first: Int?, second: Int?): Int? = when {
 fun RandomList(size: Int): List<Int> {
     val rng = Random()
 
-    return IntArray(size) { rng.nextInt(size) }.toList()
+    return IntArray(size) { rng.nextInt(1_000_000) }.toList()
 }
 
 val randoms by lazy { RandomList(3_000_000) }
